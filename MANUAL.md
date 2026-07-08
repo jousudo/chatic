@@ -143,9 +143,15 @@ Chatic needs at least one LLM provider. Manage this in the panel under **AI Sett
 
 ### Getting a free key (Google Gemini)
 
-1. Go to Google AI Studio and sign in with a Google account.
-2. Create an API key (free tier is enough to start).
+Google Gemini has a **generous free tier** — enough for everyday family use at no cost.
+
+1. Go to **https://aistudio.google.com/apikey** and sign in with a Google account.
+2. Click **Create API key** and copy it (it looks like `AIza…`).
 3. In the panel → **AI Settings** → the **Gemini** card → paste the key → **Add**.
+
+> **Hit the free daily limit?** Add **several** Gemini keys — each becomes part of a round-robin
+> pool that spreads the load — or run a **fully local, free** model with **Ollama** (no cloud, no
+> cost; see the Ollama card). The key is stored **encrypted** and never written to `.env` or a chat.
 
 ### Providers, keys, and the primary
 

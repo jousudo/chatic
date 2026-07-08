@@ -36,6 +36,8 @@ Chatic runs great on **Google Gemini**, which has a **generous free tier** — e
 
 **How it works:** every message you send is forwarded to the chosen AI provider (Gemini by default) together with a tutoring system prompt; the bot has automatic **failover** (Gemini → OpenAI → Claude → Ollama), so a single provider outage or quota limit doesn't stop the lesson. Hitting the free daily limit? Add **several** Gemini keys (comma-separated) for a round-robin pool, or run a **fully local, free** model with **Ollama** (see below) — no cloud, no cost.
 
+> 📖 More detail — multiple keys, per-user keys, Ollama — is in the [User Manual → Configuring the AI](MANUAL.md#6-configuring-the-ai).
+
 ---
 
 ## Environment Configuration (.env) — optional

@@ -36,6 +36,8 @@ O Chatic funciona muito bem com o **Google Gemini**, que tem um **plano gratuito
 
 **Como funciona:** cada mensagem que você envia é encaminhada ao provedor de IA escolhido (Gemini por padrão) junto com um prompt de professor; o bot tem **failover** automático (Gemini → OpenAI → Claude → Ollama), então uma queda ou limite de cota de um provedor não interrompe a aula. Bateu no limite diário grátis? Adicione **várias** chaves Gemini (separadas por vírgula) para um pool round-robin, ou rode um modelo **100% local e grátis** com o **Ollama** (veja abaixo) — sem nuvem, sem custo.
 
+> 📖 Mais detalhes — múltiplas chaves, chaves por usuário, Ollama — no [Manual do Usuário → Configurar a IA](MANUAL.pt-BR.md#6-configurar-a-ia).
+
 ---
 
 ## Configuração do Ambiente (.env) — opcional

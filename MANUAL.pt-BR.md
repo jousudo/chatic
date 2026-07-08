@@ -146,9 +146,16 @@ O Chatic precisa de ao menos um provedor de LLM. Gerencie isso no painel em **AI
 
 ### Conseguir uma chave gratuita (Google Gemini)
 
-1. Acesse o Google AI Studio e entre com uma conta Google.
-2. Crie uma chave de API (o nível gratuito já basta para começar).
-3. No painel → **AI Settings** → cartão **Gemini** → cole a chave → **Add**.
+O Google Gemini tem um **plano gratuito generoso** — suficiente para uso familiar no dia a dia, sem custo.
+
+1. Acesse **https://aistudio.google.com/apikey** e entre com uma conta Google.
+2. Clique em **Create API key** (Criar chave de API) e copie (fica no formato `AIza…`).
+3. No painel → **AI Settings** → cartão **Gemini** → cole a chave → **Add** (o painel é em inglês).
+
+> **Bateu no limite diário grátis?** Adicione **várias** chaves Gemini — cada uma entra num pool
+> round-robin que distribui a carga — ou rode um modelo **100% local e grátis** com o **Ollama**
+> (sem nuvem, sem custo; veja o cartão do Ollama). A chave é guardada **cifrada** e nunca escrita no
+> `.env` nem enviada no chat.
 
 ### Provedores, chaves e o primário
 
