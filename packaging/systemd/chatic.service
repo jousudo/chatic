@@ -1,0 +1,36 @@
+[Unit]
+Description=Chatic — WhatsApp Language Tutor
+Documentation=https://github.com/jousudo/chatic
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=chatic
+Group=chatic
+WorkingDirectory=/var/lib/chatic
+ExecStart=/usr/bin/chatic
+Restart=on-failure
+RestartSec=5
+
+# O QR de pareamento aparece no PAINEL WEB (/admin), nunca no journal — então os
+# logs do serviço não expõem o código de pareamento.
+
+# --- Endurecimento (sandboxing) ---
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictNamespaces=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+CapabilityBoundingSet=
+# Única árvore gravável: o diretório de dados (banco, .env, chave-mestra, temporários).
+ReadWritePaths=/var/lib/chatic
+
+[Install]
+WantedBy=multi-user.target

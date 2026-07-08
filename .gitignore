@@ -1,0 +1,34 @@
+# Configuração local com chaves de API — nunca versionar
+.env
+
+# Banco de dados SQLite e arquivos WAL
+storage/
+
+# Backups locais de sessão/DB (contêm dados pessoais — nunca versionar)
+backups/
+
+# Binário compilado
+chatic
+
+# Bundles e artefatos de distribuição (GoReleaser)
+*.tar.gz
+*.zip
+*.deb
+*.rpm
+dist/
+
+# Estado do IDE / Claude Code
+.claude/
+
+# Arquivos temporários de áudio
+*.ogg
+*.mp3
+
+# Logs de runtime (podem conter metadados/dados pessoais — nunca versionar)
+*.log
+
+# Documentos internos de arquitetura/spec/auditoria e instruções de agente —
+# NÃO são públicos (só README + MANUAL sobem)
+completo.md
+CLAUDE.md
+.agents/

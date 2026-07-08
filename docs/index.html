@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatic — Instalador & Download</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0f0c1b;
+            --bg-secondary: #17132e;
+            --bg-glass: rgba(23, 19, 46, 0.45);
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --text-primary: #f3f0ff;
+            --text-secondary: #a39ebc;
+            --accent: #7c4dff;
+            --accent-gradient: linear-gradient(135deg, #7c4dff, #b388ff);
+            --accent-glow: rgba(124, 77, 255, 0.35);
+            --success: #00e676;
+            --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+            background-image: radial-gradient(circle at 10% 20%, rgba(124, 77, 255, 0.08) 0%, transparent 40%),
+                              radial-gradient(circle at 90% 80%, rgba(179, 136, 255, 0.08) 0%, transparent 40%);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            padding: 4rem 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 4rem;
+        }
+
+        /* Hero Section */
+        header {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .badge-free {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--success);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: inline-block;
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            letter-spacing: -1.5px;
+            line-height: 1.1;
+            background: linear-gradient(135deg, #ffffff, #b388ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p.subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            line-height: 1.6;
+        }
+
+        /* 1-Liner Card */
+        .console-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-glass);
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            position: relative;
+        }
+
+        .console-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .console-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .console-dots {
+            display: flex;
+            gap: 0.4rem;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        .dot-red { background-color: #ff5f56; }
+        .dot-yellow { background-color: #ffbd2e; }
+        .dot-green { background-color: #27c93f; }
+
+        .code-box {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 14px;
+            padding: 1.2rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            overflow-x: auto;
+        }
+
+        code {
+            font-family: monospace;
+            font-size: 1rem;
+            color: #b388ff;
+            white-space: nowrap;
+        }
+
+        .btn-copy {
+            background: var(--accent-gradient);
+            color: #ffffff;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px var(--accent-glow);
+            white-space: nowrap;
+        }
+
+        .btn-copy:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px var(--accent-glow);
+        }
+
+        /* Download Section */
+        .downloads-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .dl-card {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            border-radius: 20px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 1.5rem;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .dl-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent);
+            box-shadow: 0 12px 40px rgba(124, 77, 255, 0.15);
+        }
+
+        .dl-icon {
+            font-size: 3rem;
+        }
+
+        .dl-title {
+            font-size: 1.2rem;
+            font-weight: 800;
+        }
+
+        .dl-desc {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .btn-dl {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-glass);
+            color: var(--text-primary);
+            padding: 0.6rem 1.2rem;
+            border-radius: 10px;
+            font-weight: 600;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .dl-card:hover .btn-dl {
+            background: var(--accent-gradient);
+            border-color: transparent;
+            color: #ffffff;
+            box-shadow: 0 4px 15px var(--accent-glow);
+        }
+
+        /* Specs section */
+        .specs-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+        }
+
+        .spec-col {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .spec-item {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .spec-icon {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-glass);
+            padding: 0.6rem;
+            border-radius: 12px;
+            color: var(--accent);
+            font-size: 1.2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .spec-title {
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+
+        .spec-desc {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem 0;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--border-glass);
+        }
+
+        @media (max-width: 768px) {
+            .specs-section {
+                grid-template-columns: 1fr;
+            }
+            h1 {
+                font-size: 2.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Hero -->
+        <header>
+            <div class="badge-free">Software Livre & Privado</div>
+            <h1>Chatic</h1>
+            <p class="subtitle">Seu tutor de idiomas privado no WhatsApp. Ecossistema familiar de aprendizado de línguas, 100% livre, seguro contra vazamentos de dados, compatível com a LGPD e rodando em hardware modesto.</p>
+        </header>
+
+        <!-- 1-Liner Install -->
+        <section class="console-card">
+            <div class="console-header">
+                <div class="console-title">⚡ Instalação Rápida (1 Linha)</div>
+                <div class="console-dots">
+                    <span class="dot dot-red"></span>
+                    <span class="dot dot-yellow"></span>
+                    <span class="dot dot-green"></span>
+                </div>
+            </div>
+            <p style="color: var(--text-secondary); font-size: 0.95rem;">Copie e cole o comando abaixo no seu terminal Linux ou macOS para baixar, descompactar, rodar o bot em background e abrir o painel de configuração automaticamente no navegador:</p>
+            <div class="code-box">
+                <code id="install-cmd">curl -fsSL https://raw.githubusercontent.com/jousudo/chatic/main/install.sh | bash</code>
+                <button class="btn-copy" onclick="copyCommand()">Copiar</button>
+            </div>
+        </section>
+
+        <!-- Downloads Grid -->
+        <section style="display: flex; flex-direction: column; gap: 1.5rem;">
+            <h2 style="font-size: 1.5rem; font-weight: 800; letter-spacing: -0.5px;">Download dos Bundles Otimizados</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">Se preferir a instalação manual, baixe o pacote compactado específico do seu sistema operacional contendo o binário compilado de forma estática e segura:</p>
+            <div class="downloads-grid">
+                <!-- Linux -->
+                <a class="dl-card" href="https://github.com/tutor-bot/tutor-idiomas/releases/latest/download/tutor-idiomas-linux-amd64.tar.gz">
+                    <div class="dl-icon">🐧</div>
+                    <div class="dl-title">Linux AMD64</div>
+                    <div class="dl-desc">Servidores Linux e VPS em geral (.tar.gz)</div>
+                    <button class="btn-dl">Download</button>
+                </a>
+                <!-- Windows -->
+                <a class="dl-card" href="https://github.com/tutor-bot/tutor-idiomas/releases/latest/download/tutor-idiomas-windows-amd64.zip">
+                    <div class="dl-icon">🪟</div>
+                    <div class="dl-title">Windows x64</div>
+                    <div class="dl-desc">Windows 10 / 11 moderno (.zip)</div>
+                    <button class="btn-dl">Download</button>
+                </a>
+                <!-- macOS M1/M2/M3 -->
+                <a class="dl-card" href="https://github.com/tutor-bot/tutor-idiomas/releases/latest/download/tutor-idiomas-macos-arm64.tar.gz">
+                    <div class="dl-icon">🍏 M1/M2/M3</div>
+                    <div class="dl-title">macOS Silicon</div>
+                    <div class="dl-desc">Apple Silicon Macs (.tar.gz)</div>
+                    <button class="btn-dl">Download</button>
+                </a>
+                <!-- macOS Intel -->
+                <a class="dl-card" href="https://github.com/tutor-bot/tutor-idiomas/releases/latest/download/tutor-idiomas-macos-amd64.tar.gz">
+                    <div class="dl-icon">🍏 Intel</div>
+                    <div class="dl-title">macOS Intel</div>
+                    <div class="dl-desc">Intel based Macs (.tar.gz)</div>
+                    <button class="btn-dl">Download</button>
+                </a>
+            </div>
+        </section>
+
+        <!-- Technical Specs / Hardening -->
+        <section class="specs-section">
+            <div class="spec-col">
+                <h3 style="font-size: 1.4rem; font-weight: 800; margin-bottom: 0.5rem;">🛡️ Hardening & Segurança (OWASP 10)</h3>
+                
+                <div class="spec-item">
+                    <div class="spec-icon">🔒</div>
+                    <div>
+                        <div class="spec-title">Controle de Acesso Robusto (A01)</div>
+                        <div class="spec-desc">Painel web configurável com credenciais Basic Auth isoladas no .env para bloquear o acesso não autorizado.</div>
+                    </div>
+                </div>
+
+                <div class="spec-item">
+                    <div class="spec-icon">🧼</div>
+                    <div>
+                        <div class="spec-title">Proteção contra Injeções (A03)</div>
+                        <div class="spec-desc">Utilização de Prepared Statements parametrizados no GORM e processamento de áudio sem execução de sub-shells de terminal.</div>
+                    </div>
+                </div>
+
+                <div class="spec-item">
+                    <div class="spec-icon">🌐</div>
+                    <div>
+                        <div class="spec-title">Headers de Segurança HTTP (A05)</div>
+                        <div class="spec-desc">Injeção ativa de Content-Security-Policy (CSP) estrito, X-Frame-Options (Anti-Clickjacking) e nosniff em todas as respostas.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="spec-col">
+                <h3 style="font-size: 1.4rem; font-weight: 800; margin-bottom: 0.5rem;">👥 Governança Familiar & Privacidade</h3>
+                
+                <div class="spec-item">
+                    <div class="spec-icon">🤝</div>
+                    <div>
+                        <div class="spec-title">Consentimento Granular (LGPD)</div>
+                        <div class="spec-desc">Cada membro da família possui chaves de privacidade individuais, controlando o compartilhamento de XP, interesses, idiomas e contatos.</div>
+                    </div>
+                </div>
+
+                <div class="spec-item">
+                    <div class="spec-icon">🔒</div>
+                    <div>
+                        <div class="spec-title">Transporte Seguro com Whitelist</div>
+                        <div class="spec-desc">Conversas trafegam pela criptografia ponta a ponta do WhatsApp (protocolo Signal), com whitelist em memória que bloqueia qualquer número não autorizado antes do processamento.</div>
+                    </div>
+                </div>
+
+                <div class="spec-item">
+                    <div class="spec-icon">💻</div>
+                    <div>
+                        <div class="spec-title">Privacidade Extrema (Ollama Local)</div>
+                        <div class="spec-desc">Possibilidade de desconectar totalmente o bot das nuvens comerciais rodando IAs locais como o Llama3.2 de forma local.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer>
+            Chatic — tutor de idiomas privado no WhatsApp. Licenciado sob a Licença Apache 2.0. Desenvolvido para uso livre familiar e comunitário.
+        </footer>
+    </div>
+
+    <script>
+        function copyCommand() {
+            const cmdText = document.getElementById('install-cmd').innerText;
+            navigator.clipboard.writeText(cmdText).then(() => {
+                const btn = document.querySelector('.btn-copy');
+                btn.innerText = 'Copiado!';
+                btn.style.background = '#00c853';
+                setTimeout(() => {
+                    btn.innerText = 'Copiar';
+                    btn.style.background = 'var(--accent-gradient)';
+                }, 2000);
+            }).catch(err => {
+                console.error('Erro ao copiar', err);
+            });
+        }
+    </script>
+</body>
+</html>

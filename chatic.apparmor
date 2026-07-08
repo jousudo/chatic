@@ -1,0 +1,41 @@
+# AppArmor profile for strict confinement of the Chatic bot.
+# It blocks access to sensitive data outside the bot's workspace.
+
+#include <tunables/global>
+
+/home/jou/ingles/chatic {
+  #include <abstractions/base>
+  #include <abstractions/nameservice>
+
+  # Permissões Básicas de Rede
+  network inet stream,
+  network inet6 stream,
+
+  # Bloqueio total de execução de shells (Evita RCE e injeções de comando)
+  deny /bin/sh mrwix,
+  deny /bin/bash mrwix,
+  deny /bin/dash mrwix,
+  deny /usr/bin/zsh mrwix,
+
+  # Permissão de leitura no executável e bibliotecas
+  /home/jou/ingles/chatic mr,
+  /lib/x86_64-linux-gnu/*.so* mr,
+  /usr/lib/x86_64-linux-gnu/*.so* mr,
+
+  # Permissões do diretório de armazenamento local (SQLite e Mídia)
+  /home/jou/ingles/storage/ r,
+  /home/jou/ingles/storage/** rwk,
+
+  # Permissões exclusivas para execução controlada do ffmpeg para conversão de áudio
+  /usr/bin/ffmpeg ix,
+  /usr/share/ffmpeg/** r,
+
+  # Bloqueio estrito de leitura de arquivos e chaves sensíveis do host
+  deny /etc/passwd r,
+  deny /etc/shadow r,
+  deny /etc/gshadow r,
+  deny /root/ r,
+  deny /root/** r,
+  deny /home/*/.ssh/ r,
+  deny /home/*/.ssh/** r,
+}

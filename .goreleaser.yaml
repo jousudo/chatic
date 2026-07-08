@@ -1,0 +1,104 @@
+# GoReleaser — build & release automation.
+# Docs: https://goreleaser.com
+#
+# NOME DA APLICAÇÃO (ainda a definir): se renomear o projeto, ajuste aqui —
+#   project_name, builds.binary, nfpms.package_name e os caminhos /var/lib e
+#   systemd em packaging/. O repositório assumido é github.com/jousudo/chatic.
+#
+# Uso local (sem publicar):  goreleaser release --snapshot --clean
+# Publicar (via CI, no git tag): goreleaser release --clean
+version: 2
+
+project_name: chatic
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: chatic
+    main: ./cmd/server
+    binary: chatic
+    env:
+      # Driver SQLite é puro-Go (modernc) — build 100% estático sem toolchain C.
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w -X main.version={{ .Version }}
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+
+archives:
+  - id: default
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    formats: [tar.gz]
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    files:
+      - README.md
+      - LICENSE
+      - NOTICE
+      - src: packaging/chatic.env.example
+        dst: .env.example
+
+nfpms:
+  - id: packages
+    package_name: chatic
+    vendor: Chatic Contributors
+    homepage: https://github.com/jousudo/chatic
+    maintainer: jou <jou@users.noreply.github.com>
+    description: |-
+      Private multilingual WhatsApp language tutor bot.
+      Text tutor runs with zero system dependencies; FFmpeg is optional (audio only).
+    license: Apache-2.0
+    formats:
+      - deb
+      - rpm
+    bindir: /usr/bin
+    # FFmpeg é opcional (só para áudio) — recomendado, não obrigatório.
+    recommends:
+      - ffmpeg
+    contents:
+      - src: packaging/systemd/chatic.service
+        dst: /lib/systemd/system/chatic.service
+      - src: packaging/chatic.env.example
+        dst: /usr/share/chatic/chatic.env.example
+      - src: README.md
+        dst: /usr/share/doc/chatic/README.md
+      - src: LICENSE
+        dst: /usr/share/doc/chatic/LICENSE
+      - src: NOTICE
+        dst: /usr/share/doc/chatic/NOTICE
+    scripts:
+      postinstall: packaging/scripts/postinstall.sh
+      preremove: packaging/scripts/preremove.sh
+
+checksum:
+  name_template: "checksums.txt"
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-snapshot"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+      - "^ci:"
+
+release:
+  github:
+    owner: jousudo
+    name: chatic
+  # Publica como rascunho para você revisar antes de tornar público.
+  draft: true
+  name_template: "v{{ .Version }}"
