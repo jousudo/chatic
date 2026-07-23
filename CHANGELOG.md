@@ -7,12 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-07-23
+
+Security hardening pass against the OWASP Top 10 for LLM Applications (2025),
+plus two correctness fixes. No breaking changes.
+
+### Security
+
+- **Unbounded Consumption (LLM10):** reject oversized direct-message text before it
+  enters the processing queue; add a per-user rolling rate limit (12 messages / 30s)
+  on DM processing; give the direct Google/Translate TTS HTTP calls a 20s timeout so a
+  hung provider can no longer stall the single FIFO worker.
+- **Prompt Injection (LLM01):** strengthen the shared anti-injection clause to treat
+  student input as delimited data and explicitly refuse persona swaps
+  ("you are now…", "act as…").
+
+### Fixed
+
+- XP link bonus is now awarded for URLs embedded mid-sentence (e.g. "Read this:
+  https://…"), not only when the message starts with the link.
+- The admin panel HTTP server now fails fast (aborts) if it cannot bind its port,
+  instead of silently running headless without the only pairing / key-management path.
+
+### Changed
+
+- `TutorEngine.BuildSystemInstruction` no longer reads the global config; the custom
+  system-prompt override is injected by the caller (decoupling for testability and to
+  avoid a config-reload race).
+
 ### Added
 
 - Community & project health files: `CONTRIBUTING.md`, `SECURITY.md`,
   `CODE_OF_CONDUCT.md`, issue/PR templates, and a CI workflow.
 
-## [0.1.0] - Unreleased
+## [0.1.0] - 2026-07-08
 
 First public release.
 
@@ -40,5 +68,6 @@ First public release.
   hardening + AppArmor, Docker image, and one-line installers with best-effort
   FFmpeg setup.
 
-[Unreleased]: https://github.com/jousudo/chatic/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/jousudo/chatic/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/jousudo/chatic/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/jousudo/chatic/releases/tag/v0.1.0
