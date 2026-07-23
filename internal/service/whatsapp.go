@@ -420,6 +420,15 @@ func (s *WhatsAppService) handleEvent(client *whatsmeow.Client, role, ownerPN st
 			return // Unsupported message type (e.g. image, sticker)
 		}
 
+		// DoS guardrail (OWASP LLM04): reject oversized DM text BEFORE it enters the queue or
+		// reaches the LLM, bounding token cost per message. Long material belongs in a link or a
+		// PDF (which we ingest and cap separately). Groups/audio/documents are exempt (audio and
+		// documents are not free text; groups have their own cooldown).
+		if !isGroup && audioPath == "" && documentPath == "" && len([]rune(textContent)) > maxUserInputLen {
+			s.sendMessageText(cleanedSender, "✍️ That message is too long for me to handle well here. Please shorten it — or send it as a link or a PDF and I'll read it for you.")
+			return
+		}
+
 		// Enqueue the processing task in the concurrent FIFO queue
 		queue.GlobalQueue.Enqueue(queue.Job{
 			SenderNumber:   cleanedSender,
@@ -460,6 +469,18 @@ func (s *WhatsAppService) ProcessWhatsAppMessage(job queue.Job) error {
 		if err := s.userRepo.Create(user); err != nil {
 			log.Printf("Critical error creating user %s in the database: %v", job.SenderNumber, err)
 			return err
+		}
+	}
+
+	// DoS guardrail (OWASP LLM04): per-user rolling rate limit on DM processing, to protect
+	// the LLM/API quota from a runaway or abusive sender. Groups are exempt (own guardrails).
+	if !job.IsGroup {
+		if allowed, notify := userActivityAllowed(job.SenderNumber); !allowed {
+			if notify {
+				s.sendMessageText(user.PhoneNumber, "⏳ You're sending messages very fast. Give me a few seconds to catch up and then keep going. 🙂")
+			}
+			log.Printf("User %s throttled by the per-user rate limit.", user.Name)
+			return nil
 		}
 	}
 
@@ -754,7 +775,7 @@ func (s *WhatsAppService) ProcessWhatsAppMessage(job queue.Job) error {
 	defer s.maybeSummarizeHistory(user)
 
 	// 5. Build dynamic pedagogical instructions
-	systemPrompt := s.engine.BuildSystemInstruction(user)
+	systemPrompt := s.engine.BuildSystemInstruction(user, s.customSystemPrompt())
 	// Inject the long-term memory summary (decrypted from the vault) for continuity.
 	systemPrompt += s.engine.SummaryClause(DecryptSecret(user.ConversationSummary))
 	if user.FlowState == "IMITE" {
@@ -853,6 +874,55 @@ func splitQuickTip(response string) (tutorReply, quickTip string) {
 		return strings.TrimSpace(response), ""
 	}
 	return strings.TrimSpace(response[:idx]), strings.TrimSpace(response[idx:])
+}
+
+// customSystemPrompt returns the operator's custom system-prompt override from the loaded
+// config, or "" when none is set / config is not loaded (unit tests). It is injected into
+// TutorEngine.BuildSystemInstruction so the engine stays decoupled from the global config.
+func (s *WhatsAppService) customSystemPrompt() string {
+	if config.CurrentConfig == nil {
+		return ""
+	}
+	return config.CurrentConfig.CustomSystemPrompt
+}
+
+// Per-user rolling rate limit on direct-message processing (OWASP LLM04 — Model DoS).
+// Bounds how many messages a single student can push through the LLM/API within a window,
+// protecting the shared API quota from a runaway or abusive sender. Groups have their own
+// guardrails (groupOnCooldown + groupActivityAllowed) and are exempt here.
+var (
+	userRateMu     sync.Mutex
+	userRateHits   = make(map[string][]time.Time)
+	userRateNotify = make(map[string]time.Time)
+	userRateLimit  = 12
+	userRateWindow = 30 * time.Second
+)
+
+// userActivityAllowed enforces the per-user rolling rate limit. It returns (allowed, notify):
+// allowed is false once the user exceeds userRateLimit messages within userRateWindow; notify
+// is true only the first time the user is throttled in the current window, so the "slow down"
+// reply is sent once instead of on every dropped message.
+func userActivityAllowed(number string) (allowed bool, notify bool) {
+	userRateMu.Lock()
+	defer userRateMu.Unlock()
+	now := time.Now()
+	cutoff := now.Add(-userRateWindow)
+	kept := userRateHits[number][:0] // reuse the backing array (safe under the lock)
+	for _, t := range userRateHits[number] {
+		if t.After(cutoff) {
+			kept = append(kept, t)
+		}
+	}
+	if len(kept) >= userRateLimit {
+		userRateHits[number] = kept
+		if last, ok := userRateNotify[number]; !ok || now.Sub(last) >= userRateWindow {
+			userRateNotify[number] = now
+			return false, true
+		}
+		return false, false
+	}
+	userRateHits[number] = append(kept, now)
+	return true, false
 }
 
 // --- PHASE 1: Group modes (see Section 16 of completo.md) ---
@@ -955,7 +1025,7 @@ func (s *WhatsAppService) handleGroupMessage(user *model.User, job queue.Job) er
 	// Resolve the LLM prioritizing the group's shared AI; Phase 1 is stateless
 	// (no shared history) to bound cost and simplify the context.
 	customParams := s.resolveGroupLLM(user)
-	systemPrompt := s.engine.BuildSystemInstruction(user)
+	systemPrompt := s.engine.BuildSystemInstruction(user, s.customSystemPrompt())
 
 	response, provider, err := s.factory.GenerateResponseWithFailover(systemPrompt, []model.Message{}, currentMessage, customParams)
 	if err != nil {
@@ -1161,7 +1231,7 @@ func (s *WhatsAppService) sendResponseTips(user *model.User) {
 		return
 	}
 
-	systemPrompt := s.engine.BuildSystemInstruction(user) + s.engine.BuildScaffoldingPrompt(user)
+	systemPrompt := s.engine.BuildSystemInstruction(user, s.customSystemPrompt()) + s.engine.BuildScaffoldingPrompt(user)
 
 	customParams := personalLLMParams(user)
 

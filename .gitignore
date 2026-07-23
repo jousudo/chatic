@@ -31,4 +31,5 @@ dist/
 # NÃO são públicos (só README + MANUAL sobem)
 completo.md
 CLAUDE.md
+melhorias.md
 .agents/

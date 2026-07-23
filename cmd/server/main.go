@@ -145,11 +145,14 @@ func main() {
 	adminService := service.NewWebAdminService(userRepo, chatRepo, wppService, dbContainer)
 	adminService.RegisterRoutes()
 
-	// 9. Start the admin panel web server in a goroutine
+	// 9. Start the admin panel web server in a goroutine.
+	// ListenAndServe only returns on a real error (e.g. the port is already in use). Since the
+	// panel is the ONLY way to pair WhatsApp and manage keys, a failure here is fatal — abort the
+	// whole process instead of silently running headless with no admin access (fail-fast).
 	go func() {
 		log.Printf("Admin panel running at http://localhost:%s/admin", cfg.Port)
 		if err := http.ListenAndServe(":"+cfg.Port, nil); err != nil {
-			log.Printf("Warning: failed to start web panel HTTP server: %v", err)
+			log.Fatalf("Critical: admin panel HTTP server failed on port %s: %v", cfg.Port, err)
 		}
 	}()
 

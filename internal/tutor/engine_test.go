@@ -85,7 +85,7 @@ func TestAgeClauseByBand(t *testing.T) {
 	adult.BirthYear = year - 30 // ~30 years old
 	unknown := testUser()       // BirthYear 0
 
-	minorPrompt := e.BuildSystemInstruction(minor)
+	minorPrompt := e.BuildSystemInstruction(minor, "")
 	if !strings.Contains(minorPrompt, "10 years old") || !strings.Contains(minorPrompt, "a child") {
 		t.Errorf("minor prompt should mention the age/band: %q", minorPrompt)
 	}
@@ -93,7 +93,7 @@ func TestAgeClauseByBand(t *testing.T) {
 		t.Errorf("minor prompt should include the minor-safety clause: %q", minorPrompt)
 	}
 
-	adultPrompt := e.BuildSystemInstruction(adult)
+	adultPrompt := e.BuildSystemInstruction(adult, "")
 	if !strings.Contains(adultPrompt, "30 years old") || !strings.Contains(adultPrompt, "an adult") {
 		t.Errorf("adult prompt should mention the age/band: %q", adultPrompt)
 	}
@@ -108,6 +108,71 @@ func TestAgeClauseByBand(t *testing.T) {
 	// Minor safety must also reach the study prompts (shared personaIntro).
 	if got := e.BuildVocabPrompt(minor); !strings.Contains(got, "safe for a minor") {
 		t.Errorf("study prompt for a minor should carry the safety clause: %q", got)
+	}
+}
+
+// CalculateXP must award the link bonus even when the URL is embedded mid-sentence,
+// not only when the message starts with "http" (regression: it used strings.HasPrefix).
+func TestCalculateXPEmbeddedLink(t *testing.T) {
+	e := NewTutorEngine()
+
+	cases := []struct {
+		name string
+		text string
+		want int
+	}{
+		{"embedded https", "Read this: https://example.com/article", 10},
+		{"embedded http", "look here http://example.com please", 10},
+		{"prefix https", "https://example.com is great", 10},
+		{"no link, long", "I really enjoyed the football match yesterday", 3},
+		{"three words no link", "I like football", 3},
+		{"two words", "hi there", 1},
+		{"one word", "hello", 1},
+	}
+	for _, c := range cases {
+		if got := e.CalculateXP(c.text, false); got != c.want {
+			t.Errorf("%s: CalculateXP(%q) = %d, want %d", c.name, c.text, got, c.want)
+		}
+	}
+
+	// Audio always wins the speaking bonus regardless of text.
+	if got := e.CalculateXP("", true); got != 5 {
+		t.Errorf("audio CalculateXP = %d, want 5", got)
+	}
+}
+
+// BuildSystemInstruction must use the injected custom prompt (interpolating the placeholders)
+// when one is supplied, and fall back to the builtin prompt when it is empty — the engine no
+// longer reads the global config, so the override is a pure function of its argument.
+func TestBuildSystemInstructionCustomPrompt(t *testing.T) {
+	e := NewTutorEngine()
+	u := testUser()
+
+	custom := "Persona {NomeProfessor} teaches {IdiomaAlvo} to a {IdiomaNativo} speaker at {Nivel} about {Interesses}."
+	got := e.BuildSystemInstruction(u, custom)
+	want := "Persona Emma teaches English to a Portuguese speaker at B1 about futebol e tecnologia."
+	if got != want {
+		t.Errorf("custom prompt not interpolated:\n got: %q\nwant: %q", got, want)
+	}
+
+	// Empty override => builtin prompt (must carry the security clause, not the custom text).
+	builtin := e.BuildSystemInstruction(u, "")
+	if strings.Contains(builtin, "Persona Emma teaches") {
+		t.Errorf("empty override should fall back to the builtin prompt, got custom text: %q", builtin)
+	}
+	if !strings.Contains(builtin, "SECURITY") {
+		t.Errorf("builtin prompt should include the security clause: %q", builtin)
+	}
+}
+
+// The security clause must explicitly refuse persona swaps (OWASP LLM01 hardening).
+func TestSecurityClausePersonaLock(t *testing.T) {
+	e := NewTutorEngine()
+	clause := e.securityClause()
+	for _, want := range []string{"you are now", "act as", "break character", "another role or persona"} {
+		if !strings.Contains(clause, want) {
+			t.Errorf("security clause missing persona-lock phrase %q: %s", want, clause)
+		}
 	}
 }
 

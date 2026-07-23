@@ -32,6 +32,11 @@ func NewTTSService(storageDir string) *TTSService {
 	return &TTSService{storageDir: storageDir}
 }
 
+// ttsHTTPClient bounds every direct (non-websocket) TTS HTTP request with a hard timeout.
+// Without it, a hung TTS provider would tie up the single FIFO queue worker indefinitely,
+// stalling all other users (OWASP LLM10 — Unbounded Consumption / availability).
+var ttsHTTPClient = &http.Client{Timeout: 20 * time.Second}
+
 // levelToEdgeRate maps the CEFR level to the Edge TTS speed modifier.
 // Beginners hear it slower for better comprehension; advanced learners at native pace.
 func levelToEdgeRate(level string) string {
@@ -144,7 +149,7 @@ func (s *TTSService) googleCloudTTS(text, langCode, level string) (string, error
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := (&http.Client{}).Do(req)
+	resp, err := ttsHTTPClient.Do(req)
 	if err != nil {
 		return "", err
 	}
@@ -295,7 +300,7 @@ func (s *TTSService) googleTranslateTTS(text, langCode string) (string, error) {
 	}
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
 
-	resp, err := (&http.Client{}).Do(req)
+	resp, err := ttsHTTPClient.Do(req)
 	if err != nil {
 		return "", err
 	}
